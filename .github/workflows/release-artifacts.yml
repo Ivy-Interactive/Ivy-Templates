@@ -1,0 +1,41 @@
+name: Create Release Artifacts
+
+on:
+  release:
+    types: [created, published]
+
+jobs:
+  create-artifacts:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Create zip artifacts for each folder
+        run: |
+          # Get all directories in the root (excluding hidden directories like .git, .github)
+          for dir in */; do
+            # Remove trailing slash from directory name
+            dirname="${dir%/}"
+            
+            # Skip hidden directories
+            if [[ "$dirname" == .* ]]; then
+              continue
+            fi
+            
+            # Create zip file for the directory
+            echo "Creating artifact for $dirname"
+            zip -r "${dirname}.zip" "$dirname"
+          done
+          
+          # List created zip files
+          echo "Created artifacts:"
+          ls -la *.zip
+      
+      - name: Upload artifacts to release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: '*.zip'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
