@@ -1,6 +1,4 @@
-using Ivy.Shared;
-
-namespace Ivy.Samples.Shared.Apps.Demos;
+namespace Hello.Apps;
 
 [App(icon: Icons.PartyPopper, title: "Hello", searchHints: ["welcome", "getting-started", "introduction", "first", "tutorial", "example"])]
 public class HelloApp : ViewBase
