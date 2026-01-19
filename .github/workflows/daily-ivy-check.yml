@@ -1,0 +1,60 @@
+name: Daily Ivy Version Check
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  ivy-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Get latest Ivy version
+        id: ivy
+        run: |
+          VERSION=$(curl -s https://api.nuget.org/v3-flatcontainer/ivy/index.json \
+            | jq -r '.versions[-1]')
+          
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "Failed to fetch Ivy version"
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Latest Ivy version: $VERSION" >> $GITHUB_STEP_SUMMARY
+
+      - name: Update Ivy in all csproj files
+        run: |
+          VERSION="${{ steps.ivy.outputs.version }}"
+          COUNT=0
+
+          for csproj in $(find . -name "*.csproj" -not -path "*/bin/*" -not -path "*/obj/*"); do
+            if grep -q 'PackageReference Include="Ivy"' "$csproj"; then
+              sed -i \
+                "s|<PackageReference Include=\"Ivy\" Version=\"[^\"]*\"|<PackageReference Include=\"Ivy\" Version=\"$VERSION\"|g" \
+                "$csproj"
+              COUNT=$((COUNT+1))
+            fi
+          done
+
+          echo "Updated projects: $COUNT" >> $GITHUB_STEP_SUMMARY
+
+      - name: Build all projects
+        run: |
+          for csproj in $(find . -name "*.csproj" -not -path "*/bin/*" -not -path "*/obj/*"); do
+            echo "Building: $csproj"
+            dotnet build "$csproj" --configuration Release
+          done
