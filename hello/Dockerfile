@@ -9,7 +9,7 @@ WORKDIR /src
 COPY . .
 RUN apt-get update && apt-get install -y curl bash && rm -rf /var/lib/apt/lists/*
 RUN curl -fsSL https://vite.plus | bash
-ENV PATH="/root/.local/share/vite/bin:${PATH}"
+ENV PATH="/root/.vite-plus/bin:${PATH}"
 RUN if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then cd frontend && vp install && vp build; fi
 RUN mkdir -p frontend/dist && touch frontend/dist/.keep
 
