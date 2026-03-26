@@ -1,7 +1,7 @@
 # Base runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
-EXPOSE 80
+EXPOSE 443
 
 # Build frontend stage
 FROM node:24-bookworm-slim AS frontend
@@ -38,8 +38,8 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 # Set environment variables
-ENV PORT=80
-ENV ASPNETCORE_URLS="http://+:80"
+ENV PORT=443
+ENV ASPNETCORE_URLS="https://+:443"
 
 # Run the executable
 ENTRYPOINT ["dotnet","./Hello.dll"]
