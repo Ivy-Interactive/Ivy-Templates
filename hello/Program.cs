@@ -1,6 +1,6 @@
 using Hello.Apps;
-CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 var server = new Server();
+server.UseCulture("en-US");
 #if DEBUG
 server.UseHotReload();
 #endif
