@@ -1,10 +1,10 @@
 # Base runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS base
 WORKDIR /app
 EXPOSE 80
 
 # Build frontend stage
-FROM node:24-bookworm-slim AS frontend
+FROM node:26-bookworm-slim AS frontend
 WORKDIR /src
 COPY . .
 RUN apt-get update && apt-get install -y curl bash && rm -rf /var/lib/apt/lists/*
@@ -14,7 +14,7 @@ RUN if [ -d "frontend" ] && [ -f "frontend/package.json" ]; then cd frontend && 
 RUN mkdir -p frontend/dist && touch frontend/dist/.keep
 
 # Build stage
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
